@@ -168,13 +168,15 @@ export default class WordChain {
 
       if (word !== w1_key && word !== w2_key) {
         const wordObj = dict1[word] || dict2[word]
-        if (!wordObj.uuid) {
-          const wordData = await WordChain.getWord(word)
-          wordObj.uuid = wordData[0].meta.uuid
-          wordObj.shortdef = wordData[0].shortdef.join(', ')
-          wordObj.isKeyWord = true
+        if (wordObj) {
+          if (!wordObj.uuid) {
+            const wordData = await WordChain.getWord(word)
+            wordObj.uuid = wordData[0].meta.uuid
+            wordObj.shortdef = wordData[0].shortdef.join(', ')
+            wordObj.isKeyWord = true
+          }
+          chain.push(wordObj)
         }
-        chain.push(wordObj)
       }
 
       if (p2_key && p2_key !== w2_key) {

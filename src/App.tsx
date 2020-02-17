@@ -97,7 +97,7 @@ function App() {
 
       <header>
         <h1>Word Chain</h1>
-        <h2>Find the word that links two oher words</h2>
+        <h2>Find the word that links two other words</h2>
       </header>
 
       <div className="input-form"> 

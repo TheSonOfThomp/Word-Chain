@@ -1,0 +1,45 @@
+@mixin neu($baseColor, $height, $intensity, $roundness) {
+  $shadowDistance: abs($height) / 2;
+  $invShadowDistance: -$shadowDistance;
+  $blackBaseColor: darken($baseColor, abs($roundness));
+  $whiteBaseColor: lighten($baseColor, abs($roundness));
+  $blackShadowColor: darken($baseColor, $intensity);
+  $whiteShadowColor: lighten($baseColor, $intensity);
+
+  border: none;
+  transition: (box-shadow, background) 100ms ease-out;
+  @if ($roundness > 0%) {
+    background: linear-gradient(
+      135deg, 
+      $whiteBaseColor,
+      $blackBaseColor
+    );
+  } @else {
+    background: linear-gradient(
+      135deg, 
+      $blackBaseColor,
+      $whiteBaseColor
+    );
+  }
+
+  @if ($height > 0px) {
+    box-shadow:  
+      $shadowDistance $shadowDistance 2*$shadowDistance $blackShadowColor, 
+      $invShadowDistance $invShadowDistance 2*$shadowDistance $whiteShadowColor;
+  } @else {
+    box-shadow: 
+      inset $shadowDistance $shadowDistance 2*$shadowDistance $blackShadowColor, 
+      inset $invShadowDistance $invShadowDistance 2*$shadowDistance $whiteShadowColor;
+  }
+}
+
+@mixin elevate($baseColor, $height, $intensity: 32%) {
+  $shadowDistance: abs($height) / 2;
+  $invShadowDistance: -$shadowDistance;
+
+  $blackShadowColor: darken($baseColor, $intensity);
+  $whiteShadowColor: lighten($baseColor, $intensity);
+
+  box-shadow:  
+    $shadowDistance/2 $shadowDistance 2*$shadowDistance $blackShadowColor
+}

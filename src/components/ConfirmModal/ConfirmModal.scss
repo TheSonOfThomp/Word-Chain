@@ -1,0 +1,35 @@
+@import '../../styles/mixins.scss';
+@import '../../styles/colors.scss';
+
+.confirm-modal {
+  position: absolute;
+  width: 67vw;
+  padding: 32px;
+  background-color: $backgroundColor;
+  @include elevate($backgroundColor, 12px);
+  
+  .sense-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 16px;
+
+    button {
+      padding: 12px;
+      text-align: left;
+
+      h4 {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0;
+        display: inline;
+      }
+      em {
+        opacity: 0.5;
+      }
+      div {
+        text-align: left;
+        line-height: 1.2em;
+      }
+    }
+  }
+}

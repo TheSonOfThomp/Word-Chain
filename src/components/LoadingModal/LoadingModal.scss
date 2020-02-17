@@ -1,0 +1,30 @@
+@import '../../styles/mixins.scss';
+@import '../../styles/colors.scss';
+  
+  .modal {
+    height: 33vh;
+    width: 33vw;
+    position: absolute;
+    left: 33vw;
+    top: 33vh;
+    color: inherit;
+    background-color: $backgroundColor;
+    @include elevate($backgroundColor, 24px);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      animation: spinner 700ms linear infinite;
+    }
+
+    @keyframes spinner {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  }

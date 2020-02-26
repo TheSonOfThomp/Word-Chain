@@ -41,34 +41,8 @@ body {
     align-self: center;
   }
 
-  button {
-    @include neu($backgroundColor, 8px, 32%, 2%);
-    display: block;
-    border-radius: 4px;
-    line-height: 2em;
-    font-size: inherit;
-    padding: 0.25em;
-    cursor: pointer;
-    min-width: 8ch;
-    outline: none;
-
-    &:hover {
-      @include neu($backgroundColor, 16px, 32%, 2%);
-    }
-    
-    &:active {
-      outline: none;
-      @include neu($backgroundColor, 4px, 32%, 2%);
-    }
-    
-    &:focus {
-      outline: none;
-      border: 1px solid $color;
-    }
-
-    &.submit-button {
-      grid-column: 3 / 8;
-    }
+  .submit-button {
+    grid-column: 3 / 8;
   }
 
   .results-container {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
 import './App.scss';
@@ -11,8 +11,6 @@ import ResultsContainer from './components/ResultsContainer';
 import { usePrevious } from './utils/usePrevious';
 
 function App() {
-  const [word1, setWord1String] = useState('')
-  const [word2, setWord2String] = useState('')
 
   const [Word1, setWord1] = useState({
     word: '',
@@ -20,6 +18,12 @@ function App() {
     def: '',
     syns: []
   }) // IWordStateObject
+  const setWord1String = (s:string) => {
+    setWord1({
+      ...Word1,
+      word: s
+    })
+  }
 
   const [Word2, setWord2] = useState({
     word: '',
@@ -27,15 +31,19 @@ function App() {
     def: '',
     syns: []
   }) // IWordStateObject
+  const setWord2String = (s: string) => {
+    setWord2({
+      ...Word2,
+      word: s
+    })
+  }
 
   const [confirmingModalJSX, setConfirmingModal] = useState(<></>)
   const [isConfirmingWord, setIsConfirmingWord] = useState(false)
   
   const [loading, setLoading] = useState(false)
   const wasLoading = usePrevious(loading)
-  const [chainIsSet, setChainIsSet] = useState(false)
-  const [chainData, setChain] = useState()
-
+  const [resultIsSet, setResultIsSet] = useState(false)
   const [result, setResult] = useState()
 
   // fetches the definition from the API
@@ -316,7 +324,7 @@ function App() {
   // Confirm word 2 after word 1 is set
   useEffect(() => {
     if (Word1.syns.length > 0) {
-      fetchAndSetSense(word2, setWord2)
+      fetchAndSetSense(Word2.word, setWord2)
     }
   }, [Word1])
 
@@ -336,12 +344,12 @@ function App() {
 
   function findLink(w1: IWordStateObject, w2: IWordStateObject) {
     if(w1 && w2) {
-      setChainIsSet(false)
+      setResultIsSet(false)
       setLoading(true)
       findLinkWord(w1, w2).then((data: any) => {
         console.log(data)
-        setChain(data)
-        setChainIsSet(true)
+        setResult(data)
+        setResultIsSet(true)
         setLoading(false)
       })
     }
@@ -359,7 +367,7 @@ function App() {
 
         <Textbox 
           placeholder="First word"
-          value={word1}
+          value={Word1.word}
           setValue={setWord1String}
         />
 
@@ -367,28 +375,24 @@ function App() {
 
         <Textbox
           placeholder="Second word"
-          value={word2}
+          value={Word2.word}
           setValue={setWord2String}
         />
 
         <Button 
           className="submit-button" 
           text="Find a link word"
-          buttonClick={() => fetchAndSetSense(word1, setWord1)}
+          buttonClick={() => fetchAndSetSense(Word1.word, setWord1)}
         ></Button>
       </div>
 
-      {!!isConfirmingWord && 
-        confirmingModalJSX
-      }
+      {!!isConfirmingWord &&  confirmingModalJSX}
 
       {!!loading && <LoadingModal />}
 
-      {!!chainIsSet && !!chainData &&
-        <ResultsContainer 
-          chainData={chainData}
-        />
-    }
+      {!!resultIsSet && !!result &&
+        <ResultsContainer result={result}/>
+      }
     </div>
   );
 }

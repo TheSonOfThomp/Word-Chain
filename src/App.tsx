@@ -8,14 +8,7 @@ import IWordObject, { IWordStateObject, IResultObject, IDictEntry } from './mode
 import ConfirmModal from './components/ConfirmModal';
 import Button from './components/Button';
 import ResultsContainer from './components/ResultsContainer';
-
-function usePrevious(value: any) {
-  const ref = useRef();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
+import { usePrevious } from './utils/usePrevious';
 
 function App() {
   const [word1, setWord1String] = useState('')

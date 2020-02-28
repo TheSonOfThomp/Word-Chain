@@ -4,17 +4,20 @@
 .confirm-modal {
   position: absolute;
   width: 67vw;
-  padding: 32px;
+  min-height: 50vh;
+  padding: 40px;
   background-color: $backgroundColor;
-  @include elevate($backgroundColor, 12px);
+  border-radius: 8px;
+  @include elevate($backgroundColor, 32px);
   
   .sense-list {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    grid-gap: 16px;
+    grid-gap: 24px;
+    padding-top: 16px;
 
     button {
-      padding: 12px;
+      padding: 16px;
       text-align: left;
 
       h4 {

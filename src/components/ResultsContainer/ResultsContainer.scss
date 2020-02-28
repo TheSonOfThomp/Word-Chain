@@ -1,0 +1,24 @@
+/* your css code */
+.results-container {
+  margin: 32px 16px;
+  max-width: 80vw;
+  display: grid;
+  // grid-auto-flow: column;
+  // @media screen and (max-width: 768px) {
+  //   max-width: unset;
+  //   grid-auto-flow: unset;
+  //   grid-template-columns: 1fr;
+  // }
+  grid-gap: 16px;
+  padding: 24px;
+  border-radius: 16px;
+
+  .result-wrapper {
+    display: grid;
+    grid-gap: 16px;
+  }
+
+  .result-text {
+    grid-column: 1 / -1;
+  }
+}

@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import IWordObject from '../../models/IWordObject';
+import IWordObject from '../../models/data-models';
 import './ConfirmModal.scss';
 
 const ConfirmModal = (props:any) => {
@@ -8,7 +8,6 @@ const ConfirmModal = (props:any) => {
   return (
     <div className="confirm-modal">
       <h2>There are multiple senses of the word <em>{props.word}</em></h2>
-      <h3>Select the sense you mean:</h3>
       <div className="sense-list">
         {props.wordClasses.map( (wordclass:any, i:number) => {
           return props.definitions[i].map((def: string, j:number) => {

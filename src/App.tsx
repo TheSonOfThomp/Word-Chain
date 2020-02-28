@@ -1,25 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLink, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
-import { upperFirst } from 'lodash';
+import { faLink } from '@fortawesome/free-solid-svg-icons'
 import './App.scss';
 import Textbox from './components/Textbox';
 import LoadingModal from './components/LoadingModal';
-import IWordObject from './models/IWordObject';
+import IWordObject, { IWordStateObject, IResultObject, IDictEntry } from './models/data-models';
 import ConfirmModal from './components/ConfirmModal';
 import Button from './components/Button';
+import ResultsContainer from './components/ResultsContainer';
 
-interface IWordStateObject {
-  word:string,
-  class:string,
-  def:string,
-  syns:Array<string>
+function usePrevious(value: any) {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
 }
 
 function App() {
-  const isInitialMount = useRef(true);
-  const [word1, setWord1String] = useState('lust')
-  const [word2, setWord2String] = useState('love')
+  const [word1, setWord1String] = useState('')
+  const [word2, setWord2String] = useState('')
 
   const [Word1, setWord1] = useState({
     word: '',
@@ -39,6 +39,7 @@ function App() {
   const [isConfirmingWord, setIsConfirmingWord] = useState(false)
   
   const [loading, setLoading] = useState(false)
+  const wasLoading = usePrevious(loading)
   const [chainIsSet, setChainIsSet] = useState(false)
   const [chainData, setChain] = useState()
 
@@ -116,23 +117,6 @@ function App() {
       const syns = WordObject.meta.syns.flatMap((s: any) => s)
       return syns
     } else return null
-  }
-
-  interface IDictEntry {
-    level: number,
-    parent: string | null,
-    word: string,
-    class?: string,
-    def?: string,
-    syns?: Array<string>,
-    uuid?: string,
-    isLinkWord?: boolean
-  }
-
-  interface IResultObject {
-    status: boolean,
-    message: string,
-    chain: Array<IWordStateObject | IWordObject | IDictEntry>
   }
 
   const findLinkWord = async (WordObj1: IWordStateObject, WordObj2: IWordStateObject): Promise<IResultObject> => {
@@ -350,6 +334,13 @@ function App() {
     }
   }, [Word2])
 
+  useEffect(() => {
+    if (!loading && wasLoading) {
+      window.location.href = `#link-word`
+    }
+  }, [loading, wasLoading])
+
+
   function findLink(w1: IWordStateObject, w2: IWordStateObject) {
     if(w1 && w2) {
       setChainIsSet(false)
@@ -400,36 +391,10 @@ function App() {
 
       {!!loading && <LoadingModal />}
 
-      {!!chainIsSet &&
-        <>
-        {/* <span>{chainData.message}</span> */}
-        <div className="results-container">
-        {!!chainData && chainData.chain.length > 0 &&
-          chainData.chain.map((word:any, i: number) => {
-            return (
-              <>
-                {word &&
-                  <a
-                    href={`https://www.merriam-webster.com/dictionary/${word.word}`} 
-                    target="_blank"
-                    rel="noopener noreferrer" 
-                    className={`word-link ${word.isLinkWord ? 'key-word' : ''}`} 
-                    key={word.uuid} >
-                    <h3>{upperFirst(word.word)} </h3>
-                    <span>{upperFirst(word.def)}</span>
-                    <FontAwesomeIcon icon={faExternalLinkAlt} size="xs" />
-                  </a>
-                }
-                {(i < Object.values(chainData).length - 1) && 
-                  <FontAwesomeIcon icon={faLink} /> 
-                }
-              </>
-            )
-          })
-        }
-        {!chainData && <span>No Link words found</span>}
-        </div>
-      </>
+      {!!chainIsSet && !!chainData &&
+        <ResultsContainer 
+          chainData={chainData}
+        />
     }
     </div>
   );

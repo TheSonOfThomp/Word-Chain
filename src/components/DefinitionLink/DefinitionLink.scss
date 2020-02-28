@@ -1,0 +1,46 @@
+/* your css code */
+@import '../../styles//mixins.scss';
+@import '../../styles/colors.scss';
+
+.word-link {
+  width: 32ch;
+  color: inherit;
+  text-decoration: none;
+  padding: 16px;
+  border-radius: 2px;
+  border: 2px solid transparent;
+  transition-duration: 200ms;
+  @include neu($backgroundColor, 6px, 32%, -2%);
+  
+  &:hover {
+    @include neu($backgroundColor, 10px, 32%, -1%);
+  }
+  &:active {
+    @include neu($backgroundColor, 2px, 24%, -1%);
+  }
+  
+  &#link-word {
+    background-color: $keyWordColor;
+    @include neu($keyWordColor, 6px, 24%, -2%);
+    &:hover {
+      @include neu($keyWordColor, 10px, 24%, -1%);
+    }
+    &:active {
+      @include neu($keyWordColor, 2px, 24%, -1%);
+    }
+  }
+
+  h3 {
+    margin: 0.25em 0;
+    font-size: 1.5em;
+  }
+  span {
+    font-size: 1em;
+  }
+
+  svg {
+    color: inherit;
+    width: 1em;
+    padding: 0 1ch;
+  }
+}

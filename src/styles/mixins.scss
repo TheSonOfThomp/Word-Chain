@@ -1,36 +1,61 @@
 @mixin neu($baseColor, $height, $intensity, $roundness) {
   $shadowDistance: abs($height) / 2;
   $invShadowDistance: -$shadowDistance;
-  $blackBaseColor: darken($baseColor, abs($roundness));
-  $whiteBaseColor: lighten($baseColor, abs($roundness));
-  $blackShadowColor: darken($baseColor, $intensity);
-  $whiteShadowColor: lighten($baseColor, $intensity);
 
-  border: none;
+  $baseDark: darken($baseColor, abs($roundness));
+  $baseLight: lighten($baseColor, abs($roundness));
+  
+  $shadowDark: darken($baseColor, $intensity);
+  $shadowLight: lighten($baseColor, $intensity);
+
+  $borderDark: darken($baseColor, $intensity);
+  $borderLight: lighten($baseColor, $intensity);
+
   transition: all 100ms ease-out;
   transition-property: box-shadow, background;
+  
   @if ($roundness > 0%) {
     background: linear-gradient(
       135deg, 
-      $whiteBaseColor,
-      $blackBaseColor
+      $baseLight,
+      $baseDark
     );
   } @else {
     background: linear-gradient(
       135deg, 
-      $blackBaseColor,
-      $whiteBaseColor
+      $baseDark,
+      $baseLight
     );
   }
 
   @if ($height > 0px) {
     box-shadow:  
-      $shadowDistance $shadowDistance 2*$shadowDistance $blackShadowColor, 
-      $invShadowDistance $invShadowDistance 2*$shadowDistance $whiteShadowColor;
+      $shadowDistance $shadowDistance 2*$shadowDistance $shadowDark, 
+      $invShadowDistance $invShadowDistance 2*$shadowDistance $shadowLight;
+
   } @else {
     box-shadow: 
-      inset $shadowDistance $shadowDistance 2*$shadowDistance $blackShadowColor, 
-      inset $invShadowDistance $invShadowDistance 2*$shadowDistance $whiteShadowColor;
+      inset $shadowDistance $shadowDistance 2*$shadowDistance $shadowDark, 
+      inset $invShadowDistance $invShadowDistance 2*$shadowDistance $shadowLight;
+
+  }
+
+  // Adds the shine around the border
+  $borderWidth: 2px;
+  position: relative;
+  background-clip: padding-box;
+  border-width: $borderWidth;
+  border-style: solid;
+  border-color: transparent;
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    z-index: -1;
+    margin: -$borderWidth;
+    border-radius: inherit;
+    background: linear-gradient(135deg, $borderLight, $borderDark);
   }
 }
 
@@ -38,9 +63,10 @@
   $shadowDistance: abs($height) / 2;
   $invShadowDistance: -$shadowDistance;
 
-  $blackShadowColor: darken($baseColor, $intensity);
-  $whiteShadowColor: lighten($baseColor, $intensity);
+  $shadowDark: darken($baseColor, $intensity);
+  $shadowLight: lighten($baseColor, $intensity);
+
 
   box-shadow:  
-    $shadowDistance/2 $shadowDistance 2*$shadowDistance $blackShadowColor
+    $shadowDistance/2 $shadowDistance 2*$shadowDistance $shadowDark
 }

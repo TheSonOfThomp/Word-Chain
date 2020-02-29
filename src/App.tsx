@@ -364,7 +364,6 @@ function App() {
 
   return (
     <div className="App">
-
       <header>
         <h1>Word Chain</h1>
         <h2>Find the closest synonym that links two words</h2>

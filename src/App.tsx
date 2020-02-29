@@ -38,13 +38,7 @@ function App() {
 
   const [confirmingModalJSX, setConfirmingModal] = useState(<></>)
   const [isConfirmingWord, setIsConfirmingWord] = useState(false)
-  
-  // const [loading, setLoading] = useState(false)
-
   const [state, setState] = useState<'ready' | 'started' | 'searching'>('ready')
-
-  // const wasLoading = usePrevious(loading)
-  const prevState = usePrevious(state)
   const [result, setResult] = useState<IResultObject>()
 
 

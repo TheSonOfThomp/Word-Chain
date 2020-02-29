@@ -7,10 +7,10 @@ const ConfirmModal = (props:any) => {
     <div className="confirm-modal">
       <h2>There are multiple senses of the word <em>{props.word}</em></h2>
       <div className="sense-list">
-        {props.wordClasses.map( (wordclass:any, i:number) => {
+        {props.wordClasses.map( (wordclass:string, i:number) => {
           return props.definitions[i].map((def: string, j:number) => {
             return (
-              <button onClick={() => props.set([i,j])}>
+              <button onClick={() => props.set([i,j])} key={`${props.word}-${i}-${j}`}>
                 <h4>{props.word}</h4> <em>{wordclass}</em>
                 <div>{def}</div>
               </button>

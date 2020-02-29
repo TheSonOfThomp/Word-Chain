@@ -50,6 +50,8 @@ function App() {
 
   // Starts the whole process
   const search = (w1: string, w2: string) => {
+    w1 = w1.trim()
+    w2 = w2.trim()
     if (w1 === w2) {
       setResult({
         message: `Please enter two different words`,
@@ -59,8 +61,8 @@ function App() {
       return
     } else {
       // reset any previous words
-      setWord1({...Word1, class: '', def: '', syns: []})
-      setWord2({...Word2, class: '', def: '', syns: []})
+      setWord1({word: w1, class: '', def: '', syns: []})
+      setWord2({word: w2, class: '', def: '', syns: []})
       setState('started')
       fetchAndSetSense(w1, setWord1)
     }
@@ -342,8 +344,9 @@ function App() {
 
   // Confirm word 2 after word 1 is set
   useEffect(() => {
-    if (state !== 'ready') {
+    if (state === 'started') {
       if (Word1.syns.length > 0) {
+        console.log('useEffect, Word1', Word1)
         fetchAndSetSense(Word2.word, setWord2)
       }
     }
@@ -351,7 +354,7 @@ function App() {
 
   // Find links once both words are set
   useEffect(() => {
-    if (state !== 'ready') {
+    if (state === 'started') {
       if(Word2.syns.length > 0) {
         findLink(Word1, Word2)  
       }

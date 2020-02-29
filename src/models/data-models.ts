@@ -1,4 +1,4 @@
-export default interface IWordObject {
+export interface IAPIResponseWordObject {
   def: Array<object>,
   fl: string,
   hwi: object,
@@ -21,7 +21,7 @@ interface IWordMeta {
 export interface IResultObject {
   status: boolean,
   message: string,
-  chain: Array<IWordStateObject | IWordObject | IDictEntry>
+  chain: Array<IWordStateObject | IDictEntry> | null
 }
 
 export interface IWordStateObject {
@@ -41,3 +41,5 @@ export interface IDictEntry {
   uuid?: string,
   isLinkWord?: boolean
 }
+
+export interface IDictionary { [key: string]: IDictEntry }

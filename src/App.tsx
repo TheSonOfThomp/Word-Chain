@@ -4,20 +4,21 @@ import { faLink } from '@fortawesome/free-solid-svg-icons'
 import './App.scss';
 import Textbox from './components/Textbox';
 import LoadingModal from './components/LoadingModal';
-import IWordObject, { IWordStateObject, IResultObject, IDictEntry } from './models/data-models';
+import { IAPIResponseWordObject, IWordStateObject, IResultObject, IDictEntry, IDictionary } from './models/data-models';
 import ConfirmModal from './components/ConfirmModal';
 import Button from './components/Button';
 import ResultsContainer from './components/ResultsContainer';
 import { usePrevious } from './utils/usePrevious';
+import { stringify } from 'querystring';
 
 function App() {
 
-  const [Word1, setWord1] = useState({
+  const [Word1, setWord1] = useState<IWordStateObject>({
     word: '',
     class: '',
     def: '',
     syns: []
-  }) // IWordStateObject
+  })
   const setWord1String = (s:string) => {
     setWord1({
       ...Word1,
@@ -25,12 +26,12 @@ function App() {
     })
   }
 
-  const [Word2, setWord2] = useState({
+  const [Word2, setWord2] = useState<IWordStateObject>({
     word: '',
     class: '',
     def: '',
     syns: []
-  }) // IWordStateObject
+  })
   const setWord2String = (s: string) => {
     setWord2({
       ...Word2,
@@ -41,10 +42,29 @@ function App() {
   const [confirmingModalJSX, setConfirmingModal] = useState(<></>)
   const [isConfirmingWord, setIsConfirmingWord] = useState(false)
   
-  const [loading, setLoading] = useState(false)
-  const wasLoading = usePrevious(loading)
-  const [resultIsSet, setResultIsSet] = useState(false)
-  const [result, setResult] = useState()
+  // const [loading, setLoading] = useState(false)
+
+  const [state, setState] = useState<'ready' | 'started' | 'searching'>('ready')
+
+  // const wasLoading = usePrevious(loading)
+  const prevState = usePrevious(state)
+  const [result, setResult] = useState<IResultObject>()
+
+
+  // Starts the whole process
+  const search = (w1: string, w2: string) => {
+    setState('started')
+    if (w1 === w2) {
+      setResult({
+        message: `Please enter two different words`,
+        status: false,
+        chain: null
+      })
+      return
+    } else {
+      fetchAndSetSense(w1, setWord1)
+    }
+  }
 
   // fetches the definition from the API
   const fetchWord = async(word: string) => {
@@ -57,19 +77,26 @@ function App() {
 
   // sets the state object to the appropriate sense of the word
   // i.e. if there are multiple definitions, propmt the user to select the correct one
-  const setWordSense = async (word:string, wordOptions:Array<any>, setWordState: Function) => {
+  const getWordSense = async (word:string, wordOptions:Array<any>, setWordState: Function): Promise<boolean> => {
+    
     // use only the word options that exactly match the typed word
     wordOptions = wordOptions.filter(w => w.hwi.hw === word.toLocaleLowerCase())
-    
-    if (wordOptions.length <= 1) {
+
+    if (wordOptions.length <= 0) {
+      setResult({
+        message: `Couldn't find word: "${word}"`,
+        status: false,
+        chain: null
+      })
+      return Promise.resolve(false) 
+    } else if (wordOptions.length === 1) {
       setWordState({
         word: word,
         class: wordOptions[0].fl,
         def: wordOptions[0].shortdef[0],
         syns: wordOptions[0].meta.syns[0]
       })
-      console.log('resolve setWordSense')
-      return Promise.resolve(1)
+      return Promise.resolve(true)
     }
 
     const wordClasses = wordOptions.map(opt => opt.fl)
@@ -77,7 +104,7 @@ function App() {
     const wordSyns = wordOptions.map(opt => opt.meta.syns)
     // const index = parseInt(prompt(`${shortDefs.flatMap(d => d)}`) as string)
 
-    const setWordSense = (indexPath:Array<number>) => {
+    const setWordSense = (indexPath:Array<number>):Promise<boolean> => {
       const returnValue = {
         word,
         wordClass: wordClasses[indexPath[0]],
@@ -86,10 +113,9 @@ function App() {
       }
       setWordState(returnValue)
       setIsConfirmingWord(false)
-      console.log('resolve setWordSense')
-      return Promise.resolve(1)
+      return Promise.resolve(true)
     }
-
+    
     setIsConfirmingWord(true)
     setConfirmingModal(
       <ConfirmModal
@@ -98,90 +124,84 @@ function App() {
         definitions={shortDefs}
         set={setWordSense}
       />
-    )
+      )
+    return Promise.resolve(true)
   }
 
   // an asynchronous function that performs the above 2 functions synchronously
+  // sets the word state variable
   const fetchAndSetSense = async (word:string, setWord: Function) => {
     let arr: Array<any> = await fetchWord(word)
-    if (!arr) {
-      alert(`Can't find word: ${word}`)
+    if(!arr) {
+      setResult({
+        message: `Couldn't find word: "${word}"`,
+        status: false,
+        chain: null
+      })
     } else {
-      setWordSense(word, arr, setWord)
-      console.log('resolve fetchAndSetSense')
-      return Promise.resolve(1)
+      // sets the word state variable
+      getWordSense(word, arr, setWord)
     }
   }
 
-  function getSyns(WordObject: IWordObject): Array<string> | null{
-    if(WordObject.meta) {
-      const syns = WordObject.meta.syns.flatMap((s: any) => s)
-      return syns
-    } else return null
-  }
-
+  // Where the bulk of logic lives
   const findLinkWord = async (WordObj1: IWordStateObject, WordObj2: IWordStateObject): Promise<IResultObject> => {
     console.log('Searching...')
-
     if (WordObj1 === WordObj2) {
-      console.log(`${WordObj1} and ${WordObj2} are the same word`)
+      const message = `${WordObj1} and ${WordObj2} are the same word`
+      console.log(message)
       return {
-        status: true,
-        message: `${WordObj1} and ${WordObj2} are the same word`,
+        status: false,
+        message,
         chain: [WordObj1]
       }
     }
-
-    const w1_key = WordObj1.word
-    const syns1 = WordObj1.syns
-    const dict1: { [key: string]: IDictEntry } = {}
-    dict1[w1_key] = {
-      level: 0,
-      parent: null,
-      ...WordObj1
+    
+    const createDict = (WordObj: IWordStateObject) => {
+      const dict: IDictionary = {}
+      dict[WordObj.word] = {
+        level: 0,
+        parent: null,
+        ...WordObj
+      }
+      return dict
     }
 
-    const w2_key = WordObj2.word
-    const dict2: { [key: string]: IDictEntry } = {}
-    const syns2 = WordObj2.syns
-    dict2[w2_key] = {
-      level: 0,
-      parent: null,
-      ...WordObj2
-    }
+    const dict1 = createDict(WordObj1)
+    const dict2 = createDict(WordObj2)
 
-    if (Array.isArray(syns1) && Array.isArray(syns2)) {
+    if (Array.isArray(WordObj1.syns) && Array.isArray(WordObj2.syns)) {
 
       // loop thru all the synonyms for each word
       // add them to the dictionary
       // return if we find the link work
-      for (let i = 0; i < Math.max(syns1.length, syns2.length); i++) {
-        const s1: string | null = syns1[i] ? syns1[i] : null
-        const s2: string | null = syns2[i] ? syns2[i] : null
+      for (let i = 0; i < Math.max(WordObj1.syns.length, WordObj2.syns.length); i++) {
+        const s1: string | null = WordObj1.syns[i] ? WordObj1.syns[i] : null
+        const s2: string | null = WordObj2.syns[i] ? WordObj2.syns[i] : null
 
         // return if the words are already synonyms
         // or if there is a common synonym
-        if (s1 === w2_key) {
-          const message = `'${s1}' and '${w2_key}' are synonyms!`
-          const chain = await fetchWordChain(s1)
+        if (s1 === WordObj2.word) {
+          const message = `'${s1}' and '${WordObj2.word}' are synonyms!`
+          const chain = await fetchWordChain(s1, [WordObj1, WordObj2], [dict1, dict2])
           console.log(message, chain)
           return {
             status: true,
             message,
             chain
           }
-        } else if (s2 === w1_key) {
-          const message = `'${s2}' and '${w1_key}' are synonyms!`
-          const chain = await fetchWordChain(s2)
+        } else if (s2 === WordObj1.word) {
+          const message = `'${s2}' and '${WordObj1.word}' are synonyms!`
+          const chain = await fetchWordChain(s2, [WordObj1, WordObj2], [dict1, dict2])
           console.log(message, chain)
           return {
             status: true,
             message,
             chain
           }
-        } else if (s1 && (s1 === s2 || dict2[s1])) {
-          const message = `"${w1_key}" and "${w2_key}" have a common synonym: "${s1}"`
-          const chain = await fetchWordChain(s1)
+        } else if (s1 && (s1 === s2 || dict2[s1] )) {
+          const message = `"${WordObj1.word}" and "${WordObj2.word}" have a common synonym: "${s1}"`
+          const chain = await fetchWordChain(s1, [WordObj1, WordObj2], [dict1, dict2])
           console.log(message, chain)
           return {
             status: true,
@@ -189,8 +209,8 @@ function App() {
             chain
           }
         } else if (s2 && dict1[s2]) {
-          const message = `"${w1_key}" and "${w2_key}" have a common synonym: "${s2}"`
-          const chain = await fetchWordChain(s2)
+          const message = `"${WordObj1.word}" and "${WordObj2.word}" have a common synonym: "${s2}"`
+          const chain = await fetchWordChain(s2, [WordObj1, WordObj2], [dict1, dict2])
           console.log(message, chain)
           return {
             status: true,
@@ -202,14 +222,14 @@ function App() {
           if (s1) {
             dict1[s1] = {
               level: 1,
-              parent: w1_key,
+              parent: WordObj1.word,
               word: s1
             }
           }
           if (s2) {
             dict2[s2] = {
               level: 1,
-              parent: w2_key,
+              parent: WordObj2.word,
               word: s2
             }
           }
@@ -218,27 +238,28 @@ function App() {
 
       // now go through all the synonyms found
       // find the lvl 2 synonyms of each synonym
-      for (let i = 0; i < Math.max(syns1.length, syns2.length); i++) {
-        const s1: string | null = syns1[i] ? syns1[i] : null
-        const s2: string | null = syns2[i] ? syns2[i] : null
+      for (let i = 0; i < Math.max(WordObj1.syns.length, WordObj2.syns.length); i++) {
+        const s1: string | null = WordObj1.syns[i] ? WordObj1.syns[i] : null
+        const s2: string | null = WordObj2.syns[i] ? WordObj2.syns[i] : null
 
-        if (s1) {
-          const s1word: Array<IWordObject> = await fetchWord(s1)
-          const s1syns = getSyns(s1word[0])
-          dict1[s1].uuid = s1word[0].meta.uuid
-          dict1[s1].def = s1word[0].shortdef[0]
-          if (Array.isArray(s1syns)) {
-            for (let s of s1syns) {
-              if (!dict1[s]) {
-                dict1[s] = {
+        const addNextSynonym = async (word:string, currentDict: IDictionary, otherDict: IDictionary): Promise<IResultObject | undefined> => {
+          const wordResponse: Array<IAPIResponseWordObject> = await fetchWord(word)
+          const syns: Array<string> = wordResponse[0].meta.syns.flat()
+          currentDict[word].uuid = wordResponse[0].meta.uuid
+          currentDict[word].def = wordResponse[0].shortdef[0]
+          if (Array.isArray(syns)) {
+            for (let s of syns) {
+              if (!currentDict[s]) {
+                currentDict[s] = {
                   level: 2,
                   word: s,
                   parent: s1,
                 }
               }
 
-              if (dict2[s]) {
-                const chain = await fetchWordChain(s)
+              // Check if the current word exists in the other dictionary of synonyms
+              if (otherDict[s]) {
+                const chain = await fetchWordChain(s, [WordObj1, WordObj2], [dict1, dict2])
                 console.log(`Link word found: ${s}`)
                 console.log(chain)
                 return {
@@ -251,109 +272,97 @@ function App() {
           }
         }
 
-        if (s2) {
-          const s2word = await fetchWord(s2)
-          const s2syns = getSyns(s2word[0])
-          dict2[s2].uuid = s2word[0].meta.uuid
-          dict2[s2].def = s2word[0].shortdef.join(', ')
-          if (Array.isArray(s2syns)) {
-            for (let s of s2syns) {
-              if (!dict2[s]) {
-                dict2[s] = {
-                  level: 2,
-                  word: s,
-                  parent: s2,
-                }
-              }
+        if (s1) {
+          const res = await addNextSynonym(s1, dict1, dict2)
+          if (res) { return res }
+        }
 
-              if (dict1[s]) {
-                const chain = await fetchWordChain(s)
-                console.log(`Link word found: ${s}`)
-                console.log(chain)
-                return {
-                  status: true,
-                  message: `Link word found: ${s}`,
-                  chain,
-                }
-              }
-            }
-          }
+        if (s2) {
+          const res = await addNextSynonym(s2, dict2, dict1)
+          if (res) { return res}
         }
       }
     }
+    
     console.log("No Link words found")
     return {
       status: false,
       message: "No link words found",
       chain: []
     }
+  }
 
-    async function fetchWordChain(word: string): Promise<Array<IDictEntry>> {
-      let chain = []
-      const p1_key = dict1[word] ? dict1[word].parent : null
-      const p2_key = dict2[word] ? dict2[word].parent : null
+  async function fetchWordChain(keyword: string, WordObjs: Array<IWordStateObject>, Dictionaries: Array<IDictionary>): Promise<Array<IDictEntry>> {
+    let chain = []
 
-      chain.push(dict1[w1_key])
+    const [startWord, endWord] = WordObjs
+    const [dict1, dict2] = Dictionaries
 
-      if (p1_key && p1_key !== w1_key) {
-        chain.push(dict1[p1_key])
-      }
+    const p1_key = dict1[keyword] ? dict1[keyword].parent : null
+    const p2_key = dict2[keyword] ? dict2[keyword].parent : null
 
-      if (word !== w1_key && word !== w2_key) {
-        const wordObj = dict1[word] || dict2[word]
-        if (wordObj) {
-          if (!wordObj.uuid) {
-            const wordData = await fetchWord(word)
-            wordObj.uuid = wordData[0].meta.uuid
-            wordObj.def = wordData[0].shortdef[0]
-            wordObj.isLinkWord = true
-          }
-          chain.push(wordObj)
+    chain.push(dict1[startWord.word])
+
+    if (p1_key && p1_key !== startWord.word) {
+      chain.push(dict1[p1_key])
+    }
+
+    if (keyword !== startWord.word && keyword !== endWord.word) {
+      const wordObj = dict1[keyword] || dict2[keyword]
+      if (wordObj) {
+        if (!wordObj.uuid) {
+          const wordData = await fetchWord(keyword)
+          wordObj.uuid = wordData[0].meta.uuid
+          wordObj.def = wordData[0].shortdef[0]
+          wordObj.isLinkWord = true
         }
+        chain.push(wordObj)
       }
+    }
 
-      if (p2_key && p2_key !== w2_key) {
-        chain.push(dict2[p2_key])
-      }
+    if (p2_key && p2_key !== endWord.word) {
+      chain.push(dict2[p2_key])
+    }
 
-      chain.push(dict2[w2_key])
-      return chain
+    chain.push(dict2[endWord.word])
+    return chain
+  }
+  
+  function findLink(w1: IWordStateObject, w2: IWordStateObject) {
+    if (w1 && w2) {
+      setState('searching')
+      findLinkWord(w1, w2).then((data: any) => {
+        console.log(data)
+        setResult(data)
+        setState('ready')
+      })
     }
   }
 
   // Confirm word 2 after word 1 is set
   useEffect(() => {
-    if (Word1.syns.length > 0) {
-      fetchAndSetSense(Word2.word, setWord2)
+    if (state !== 'ready') {
+      if (Word1.syns.length > 0) {
+        fetchAndSetSense(Word2.word, setWord2)
+      }
     }
-  }, [Word1])
+  }, [Word1, state])
 
   // Find links once both words are set
   useEffect(() => {
-    if(Word2.syns.length > 0) {
-      findLink(Word1, Word2)  
+    if (state !== 'ready') {
+      if(Word2.syns.length > 0) {
+        findLink(Word1, Word2)  
+      }
     }
-  }, [Word2])
+  }, [Word2, state])
 
   useEffect(() => {
-    if (!loading && wasLoading) {
+    if (state === 'ready') {
       window.location.href = `#link-word`
     }
-  }, [loading, wasLoading])
+  }, [state])
 
-
-  function findLink(w1: IWordStateObject, w2: IWordStateObject) {
-    if(w1 && w2) {
-      setResultIsSet(false)
-      setLoading(true)
-      findLinkWord(w1, w2).then((data: any) => {
-        console.log(data)
-        setResult(data)
-        setResultIsSet(true)
-        setLoading(false)
-      })
-    }
-  }
 
   return (
     <div className="App">
@@ -364,7 +373,6 @@ function App() {
       </header>
 
       <div className="input-form"> 
-
         <Textbox 
           placeholder="First word"
           value={Word1.word}
@@ -382,15 +390,15 @@ function App() {
         <Button 
           className="submit-button" 
           text="Find a link word"
-          buttonClick={() => fetchAndSetSense(Word1.word, setWord1)}
+          buttonClick={() => search(Word1.word, Word2.word)}
         ></Button>
       </div>
 
       {!!isConfirmingWord &&  confirmingModalJSX}
 
-      {!!loading && <LoadingModal />}
+      {state === 'searching' && <LoadingModal />}
 
-      {!!resultIsSet && !!result &&
+      {!!result &&
         <ResultsContainer result={result}/>
       }
     </div>

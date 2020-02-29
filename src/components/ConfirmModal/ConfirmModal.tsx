@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import IWordObject from '../../models/data-models';
 import './ConfirmModal.scss';
 
 const ConfirmModal = (props:any) => {

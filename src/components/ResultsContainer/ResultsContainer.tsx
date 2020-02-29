@@ -8,7 +8,7 @@ import { IResultObject } from '../../models/data-models';
 
 const ResultsContainer = (props: { result: IResultObject }) => (
   <div className="results-container">
-    {props.result.chain.length > 0 &&
+    {props.result.chain &&
       props.result.chain.map((word: object, i: number) => {
         return (
           <div className="result-wrapper">
@@ -17,7 +17,7 @@ const ResultsContainer = (props: { result: IResultObject }) => (
                 word={word}
               />
             }
-            {(i < props.result.chain.length - 1) &&
+            {(props.result.chain && i < props.result.chain.length - 1) &&
               <FontAwesomeIcon icon={faLink} />
             }
           </div>

@@ -9,16 +9,16 @@ import ConfirmModal from './components/ConfirmModal';
 import Button from './components/Button';
 import ResultsContainer from './components/ResultsContainer';
 import { usePrevious } from './utils/usePrevious';
-import { stringify } from 'querystring';
 
 function App() {
 
-  const [Word1, setWord1] = useState<IWordStateObject>({
+  const emptyWordObject: IWordStateObject = {
     word: '',
     class: '',
     def: '',
     syns: []
-  })
+  }
+  const [Word1, setWord1] = useState<IWordStateObject>(emptyWordObject)
   const setWord1String = (s:string) => {
     setWord1({
       ...Word1,
@@ -26,18 +26,15 @@ function App() {
     })
   }
 
-  const [Word2, setWord2] = useState<IWordStateObject>({
-    word: '',
-    class: '',
-    def: '',
-    syns: []
-  })
+  const [Word2, setWord2] = useState<IWordStateObject>(emptyWordObject)
   const setWord2String = (s: string) => {
     setWord2({
       ...Word2,
       word: s
     })
   }
+
+  
 
   const [confirmingModalJSX, setConfirmingModal] = useState(<></>)
   const [isConfirmingWord, setIsConfirmingWord] = useState(false)
@@ -53,7 +50,6 @@ function App() {
 
   // Starts the whole process
   const search = (w1: string, w2: string) => {
-    setState('started')
     if (w1 === w2) {
       setResult({
         message: `Please enter two different words`,
@@ -62,6 +58,10 @@ function App() {
       })
       return
     } else {
+      // reset any previous words
+      setWord1({...Word1, class: '', def: '', syns: []})
+      setWord2({...Word2, class: '', def: '', syns: []})
+      setState('started')
       fetchAndSetSense(w1, setWord1)
     }
   }
@@ -330,6 +330,7 @@ function App() {
   
   function findLink(w1: IWordStateObject, w2: IWordStateObject) {
     if (w1 && w2) {
+      // reset old words
       setState('searching')
       findLinkWord(w1, w2).then((data: any) => {
         console.log(data)

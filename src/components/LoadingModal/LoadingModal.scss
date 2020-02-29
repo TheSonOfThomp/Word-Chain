@@ -2,11 +2,17 @@
 @import '../../styles/colors.scss';
   
   .modal {
+    position: absolute;
     height: 33vh;
     width: 33vw;
-    position: absolute;
     left: 33vw;
     top: 33vh;
+    @media screen and (max-width: 768px) {
+      height: 50vh;
+      width: 80vw;
+      top: 25vh;
+      left: 10vw;
+    }
     color: inherit;
     background-color: $backgroundColor;
     @include elevate($backgroundColor, 24px);

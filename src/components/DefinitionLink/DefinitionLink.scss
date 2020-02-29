@@ -3,7 +3,8 @@
 @import '../../styles/colors.scss';
 
 .word-link {
-  width: 32ch;
+  min-width: 20ch;
+  max-width: 32ch;
   color: inherit;
   text-decoration: none;
   padding: 16px;

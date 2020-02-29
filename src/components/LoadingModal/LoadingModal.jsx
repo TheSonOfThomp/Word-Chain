@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner} from '@fortawesome/free-solid-svg-icons'
 import './LoadingModal.scss';
 
-const Modal = (props) => (
+const Modal = () => (
   <div className="modal">
     Searching...
     <br/>

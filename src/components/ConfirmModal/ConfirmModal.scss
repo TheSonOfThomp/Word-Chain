@@ -3,16 +3,20 @@
 
 .confirm-modal {
   position: absolute;
-  width: 67vw;
-  min-height: 50vh;
-  padding: 40px;
+  width: 80vw;
+  max-height: 80vh;
+  padding: 32px;
   background-color: $backgroundColor;
   border-radius: 8px;
+  overflow: scroll;
+  top: 10vh;
+  left: 10vw;
+  box-sizing: border-box;
   @include elevate($backgroundColor, 32px);
   
   .sense-list {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(16ch, 1fr));
     grid-gap: 24px;
     padding-top: 16px;
 

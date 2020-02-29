@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import './ConfirmModal.scss';
 
 const ConfirmModal = (props:any) => {
-  console.log(props)
   return (
     <div className="confirm-modal">
       <h2>There are multiple senses of the word <em>{props.word}</em></h2>

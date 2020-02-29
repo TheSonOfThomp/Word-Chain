@@ -24,14 +24,11 @@ body {
   font-size: 16px;
   
   header {
-    // position: sticky;
-    // top: 0;
-    width: 100%;
     display: grid;
-    grid-template-columns: auto max-content auto;
     background-color: $backgroundColor;
     text-align: left;
-    margin: 32px auto;
+    margin: 32px 16px;
+    align-self: center;
 
     h1 {
       display: inline;

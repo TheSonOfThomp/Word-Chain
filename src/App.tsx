@@ -49,7 +49,7 @@ function App() {
 
 
   // Starts the whole process
-  const search = (w1: string, w2: string) => {
+  const start = (w1: string, w2: string) => {
     w1 = w1.trim()
     w2 = w2.trim()
     if (w1 === w2) {
@@ -394,7 +394,7 @@ function App() {
         <Button 
           className="submit-button" 
           text="Find a link word"
-          buttonClick={() => search(Word1.word, Word2.word)}
+          buttonClick={() => start(Word1.word, Word2.word)}
         ></Button>
       </div>
 
